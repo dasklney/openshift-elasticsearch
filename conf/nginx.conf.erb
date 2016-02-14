@@ -26,7 +26,7 @@ http {
                         '$request_time '
                         '$upstream_response_time';
 
-    access_log  <%= ENV['OPENSHIFT_ELASTICSEARCH_DIR'] %>logs/access.log  logstash;
+    access_log <%= ENV['OPENSHIFT_ELASTICSEARCH_DIR'] %>logs/access.log logstash;
 
     sendfile  on;
     gzip      on;

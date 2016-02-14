@@ -2,23 +2,26 @@ server {
     listen  <%= ENV['OPENSHIFT_ELASTICSEARCH_IP'] %>:<%= ENV['OPENSHIFT_ELASTICSEARCH_PORT'] %>;
     client_max_body_size 512M;
 
-    location ^~ /<%= ENV['ELASTICSEARCH_PATH'] %> {
+    location @es {
+        proxy_pass       http://<%= ENV['OPENSHIFT_ELASTICSEARCH_IP'] %>:9200;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Host $http_host;
         proxy_set_header X-NginX-Proxy true;
-
-        rewrite ^/<%= ENV['ELASTICSEARCH_PATH'] %>/?(.*) /$1 break;
-        proxy_pass       http://<%= ENV['OPENSHIFT_ELASTICSEARCH_IP'] %>:9200;
-        index  index.html index.htm;
     }
 
-    location ^~ / {
+    location / {
+        index  index.html index.htm;
+        try_files $uri @es;
+    }
+
+    location ^~ /kibana/ {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header Host $http_host;
         proxy_set_header X-NginX-Proxy true;
 
+        rewrite ^/kibana/?(.*) /$1 break;
         proxy_pass       http://<%= ENV['OPENSHIFT_ELASTICSEARCH_IP'] %>:5601;
         index  index.html index.htm;
     }
